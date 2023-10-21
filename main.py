@@ -1,6 +1,16 @@
-import os, sys, subprocess, shlex, socket, re
+import os, sys, ctypes, subprocess, shlex, socket, re
 
 ### CLASES PROGRAMA
+class txt:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKCYAN = '\033[96m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
 
 class ubiArchivo:
     def __init__(self, archivoArg):
@@ -17,6 +27,9 @@ class scroller:
         self.top = size-(size-1)
         self.bottom = size
         self.mensaje = ""
+    
+    def __str__(self) -> str:
+        return self.mensaje
     
     def true_if_scrollable(self, lastline):
         if lastline - self.size <= 0:
@@ -47,35 +60,47 @@ class scroller:
 
 ### FUNCIONES PROGRAMA
 
-def os_is_windows(): 
-    if os.name == 'nt':
-        windowsBool = True
-    else:
-        windowsBool = False
-    return windowsBool
+def checkTerminal():
+    BUF_SIZE = 256
+    buffer = ctypes.create_unicode_buffer(BUF_SIZE)
+    ctypes.windll.kernel32.GetConsoleTitleW(buffer, BUF_SIZE)
+
+    window = buffer.value
+
+    terminal = ""
+    if "- python" in window: terminal = "cmd" #cmd
+    elif "cmd.exe" in window: terminal = "cmd" #cmd
+    elif "powershell.exe" in window: terminal = "ps" #powershell
+    elif "PowerShell" in window: terminal = "ps" #powershell
+    elif "mingw64:" in window: terminal = "bash" #git_bash
+    else: terminal = "bash"
+
+    #print(f"Terminal is Powershell: {terminal}")
+    #print(f'Colortest:\n{txt.BOLD}BOLD\n{txt.FAIL}FAIL\n{txt.ENDC}ENDC\n{txt.HEADER}HEADER\n{txt.OKBLUE}OKBLUE\n{txt.OKCYAN}OKCYAN\n{txt.OKGREEN}OKGREEN\n{txt.UNDERLINE}UNDERLINE\n{txt.WARNING}WARNING')
+    return terminal
 
 def clear(): 
-    if windowsBool:
+    if terminal == "cmd" or terminal == "ps":
         os.system('cls')
     else:
         os.system('clear')
 
 def help_command():
     print("\nAyuda charliePADconsole. Comandos:\n")
-    print("Nuevo archivo: Crea un archivo en la dirección y con el nombre especificado. cpc -new *dirección/nombre*\n    Ejemplos: cpc -n archivo\n              cpc -new documentos/notas")
-    print("Abrir archivo: Abre un archivo con el nombre especificado de la dirección especificada. cpc -open *dirección/nombre*\n    Ejemplos: cpc -open archivo\n              cpc -o documentos/notas")
-    print('Renombrar archivo: Cambia el nombre de un archivo en la dirección especificada. cpc -rename *dirección/nombre* *nuevo nombre*\n    Ejemplos: cpc -rename archivo "receta de sopa" \n              cpc -r documentos/notas notas_2023')
-    print("Eliminar archivo: Elimina un archivo con el nombre especificado de la direcciión especificada cpc -delete *dirección/nombre*\n    Ejemplos: cpc -d archivo\n              cpc -delete C:/Usuarios/test.txt")
+    print("Nuevo archivo: Crea un archivo en la dirección y con el nombre especificado. cp -new *dirección/nombre*\n    Ejemplos: cp -n archivo\n              cp -new documentos/notas")
+    print("Abrir archivo: Abre un archivo con el nombre especificado de la dirección especificada. cp -open *dirección/nombre*\n    Ejemplos: cp -open archivo\n              cp -o documentos/notas")
+    print('Renombrar archivo: Cambia el nombre de un archivo en la dirección especificada. cp -rename *dirección/nombre* *nuevo nombre*\n    Ejemplos: cp -rename archivo "receta de sopa" \n              cp -r documentos/notas notas_2023')
+    print("Eliminar archivo: Elimina un archivo con el nombre especificado de la direcciión especificada cp -delete *dirección/nombre*\n    Ejemplos: cp -d archivo\n              cp -delete C:/Usuarios/test.txt")
     print("\nSi no especificas una dirección, se buscarán los archivos en la dirección en la que se encuentra la consola (puedes usar los comandos que ya conoces de cmd o bash).")
-    print('Recuerda usar comillas ("") en dirección en caso de que haya espacios. Por ejemplo:\n    cpc -new "documentos/nuevo archivo"\nEsta orden creará un archivo con el nombre "nuevo archivo", dentro del directorio relativo "documentos"')
-    print('Mientras el programa esté abierto, verás "cpc" al principio de la línea de comandos\n')
+    print('Recuerda usar comillas ("") en dirección en caso de que haya espacios. Por ejemplo:\n    cp -new "documentos/nuevo archivo"\nEsta orden creará un archivo con el nombre "nuevo archivo", dentro del directorio relativo "documentos"')
+    print('Mientras el programa esté abierto, verás "cp" al principio de la línea de comandos\n')
     input("Presiona Enter para continuar\n")
 
 def welcome():
     print("Bienvenido a charliePADconsole, tu bloc de notas de consola")
-    print("\nComandos:\ncpc -new *direccion/nombre*\ncpc -open *direccion/nombre*\ncpc -rename *direccion/nombre antiguo* *nombre nuevo*\ncpc -delete *direccion/nombre*\ncpc -exit")
+    print("\nComandos:\ncp -new *direccion/nombre*\ncp -open *direccion/nombre*\ncp -rename *direccion/nombre antiguo* *nombre nuevo*\ncp -delete *direccion/nombre*\ncp -exit")
     print("\nAlternativamente, usa -n, -o, -r, -d, -e")
-    print('Escribe "cpc -help" para más ayuda\n')
+    print('Escribe "cp -help" para más ayuda\n')
 
 def new_command(args):
     fichero = ubiArchivo(args[2])
@@ -247,8 +272,8 @@ def open_editor(args): ### EDITOR
             elif args[0] == ("-exit") or args[0] == ("-e"): break
             elif args[0] == ("-help") or args[0] == ("-h"): help_editor()
             elif args[0] == ("-config") or args[0] == ("-c"): scr = scroller(int(args[1]))
-            elif args[0] == ("down") or args[0] == ("d") or args[0] == ("bajar") or args[0] == ("b"): scr.down(int(args[1]), ultimaLinea); mensajeOrden = scr.mensaje
-            elif args[0] == ("up") or args[0] == ("u") or args[0] == ("subir") or args[0] == ("s"): scr.up(int(args[1]), ultimaLinea); mensajeOrden = scr.mensaje
+            elif args[0] == ("down") or args[0] == ("d") or args[0] == ("bajar") or args[0] == ("b"): scr.down(int(args[1]), ultimaLinea); mensajeOrden = str(scr)
+            elif args[0] == ("up") or args[0] == ("u") or args[0] == ("subir") or args[0] == ("s"): scr.up(int(args[1]), ultimaLinea); mensajeOrden = str(scr)
             elif args[0] == ("edit") or args[0] == ("e"):
                 contenidolinea = eliminar_prefijos(accion, "edit")
                 contenidolinea = separarContenido_linea(contenidolinea)
@@ -271,7 +296,7 @@ def open_editor(args): ### EDITOR
             mensajeOrden = "Comando no válido"
 
 ### INICIALIZAR PROGRAMA
-windowsBool = os_is_windows()
+terminal = checkTerminal()
 
 if os.path.abspath("").lower == "c:\\windows\\system32":
     direccion = os.path.expanduser("~")
@@ -284,16 +309,15 @@ command = ' '.join(args)
 
 salida = False
 
-welcome()
+#welcome()
 
 ### BUCLE PROGRAMA
-
 while True: #Bucle menú principal
-    
-    if command.startswith("cpc"):
+    if command.startswith("cp") or command.startswith("-e") or command.startswith("e"):
         args = shlex.split(command)
-        try: 
-            if args[1] == ("-new") or args[1] == ("-n"): new_command(args)
+        try:
+            if args[0] == ('-e') or args[0] == ('e'): salida = True
+            elif args[1] == ("-new") or args[1] == ("-n"): new_command(args)
             elif args[1] == ("-open") or args[1] == ("-o"): open_editor(args)
             elif args[1] == ("-rename") or args[1] == ("-r"): rename_command(args)
             elif args[1] == ("-delete") or args[1] == ("-d"): delete_command(args)
@@ -302,26 +326,31 @@ while True: #Bucle menú principal
             else: print("Comando inexistente")
 
         except:
-            if command == "cpc": welcome()
+            if command == "cp": welcome()
             else: print("Comando no válido")
 
-    elif command.startswith("cd"):
-        args = shlex.split(command)
-        try:
-            os.chdir(args[1])
-            direccion = os.getcwd()
-        except: print("El sistema no puede encontrar la ruta especificada")
     elif command == ("cls") or command == ("clear"): clear()
+    elif "python.exe" in command: print()
     else:
         process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         stdout, stderr = process.communicate()
-        if windowsBool: print(stdout.decode('cp437')) 
-        else: print(stdout.decode('utf-8'))
 
-    if windowsBool: lineacomandos = "cpc "+direccion+">"
-    else: lineacomandos = f'{os.getlogin()}@{socket.gethostname()} cpc {direccion}\n$ '   
+        if stdout: print(stdout.decode('cp437'))
+        if stderr: print(stderr.decode('cp437'))
+    
+    if terminal == "cmd": lineacomandos = f"{txt.OKCYAN}cp {txt.ENDC}"+direccion+">"
+    #elif terminal == "ps": lineacomandos = ""
+    elif terminal == "bash": lineacomandos = f'{txt.OKGREEN}{os.getlogin()}@{socket.gethostname()} {txt.HEADER}CharliePad {txt.WARNING}{direccion}{txt.ENDC}\n$ '   
 
     if salida: exit_command(); break    
+    elif terminal == "ps":
+        pass
+        """process = subprocess.Popen(f'Write-Host "CP " -ForegroundColor blue -NoNewline; write-host {direccion}>', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        
+        stdout, stderr = process.communicate()
+
+        if stdout: print(stdout.decode('cp437'))
+        if stderr: print(stderr.decode('cp437'))"""
     else: command = input(lineacomandos)
 
 """
