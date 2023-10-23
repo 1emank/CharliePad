@@ -1,4 +1,4 @@
-import os, sys, ctypes, subprocess, shlex, socket, re
+import os, sys, platform, ctypes, subprocess, shlex, socket, re
 
 ### CLASES PROGRAMA
 class txt:
@@ -59,25 +59,6 @@ class scroller:
                 self.mensaje = f"Bajando algo menos de {x} líneas" #post: número exacto
 
 ### FUNCIONES PROGRAMA
-
-def checkTerminal():
-    BUF_SIZE = 256
-    buffer = ctypes.create_unicode_buffer(BUF_SIZE)
-    ctypes.windll.kernel32.GetConsoleTitleW(buffer, BUF_SIZE)
-
-    window = buffer.value
-
-    terminal = ""
-    if "- python" in window: terminal = "cmd" #cmd
-    elif "cmd.exe" in window: terminal = "cmd" #cmd
-    elif "powershell.exe" in window: terminal = "ps" #powershell
-    elif "PowerShell" in window: terminal = "ps" #powershell
-    elif "mingw64:" in window: terminal = "bash" #git_bash
-    else: terminal = "bash"
-
-    #print(f"Terminal is Powershell: {terminal}")
-    #print(f'Colortest:\n{txt.BOLD}BOLD\n{txt.FAIL}FAIL\n{txt.ENDC}ENDC\n{txt.HEADER}HEADER\n{txt.OKBLUE}OKBLUE\n{txt.OKCYAN}OKCYAN\n{txt.OKGREEN}OKGREEN\n{txt.UNDERLINE}UNDERLINE\n{txt.WARNING}WARNING')
-    return terminal
 
 def clear(): 
     if terminal == "cmd" or terminal == "ps":
@@ -295,8 +276,27 @@ def open_editor(args): ### EDITOR
         except:
             mensajeOrden = "Comando no válido"
 
+def load_config():
+    if os.path.exists("config.txt") == False:
+        sistema = platform.system()
+        idioma = ""
+        if sistema == 'Windows': idioma = ctypes.windll.kernel32.GetUserDefaultUILanguage()
+        elif sistema == 'Linux': pass
+        elif sistema == 'Darwin': idioma = ""; 
+        else:
+            pass
+    
+        with open("config.txt", 'w') as archivo:
+            archivo.write(f'terminal={sistema}\nscroller.size=15\nlang={idioma}\nlastfile1=\nlastfile2=\nlastfile3=\nlastfile4=\nlastfile5=')
+    else:
+        with open("config.txt", 'r', encoding='utf-8') as fichero:
+            contenido = fichero.read()
+        configItems = contenido.splitlines()
+    
+    return terminal, scr, idioma, lastOpen5
+
 ### INICIALIZAR PROGRAMA
-terminal = checkTerminal()
+terminal, scr, idioma, lastOpen5 = load_config() 
 
 if os.path.abspath("").lower == "c:\\windows\\system32":
     direccion = os.path.expanduser("~")
@@ -338,9 +338,9 @@ while True: #Bucle menú principal
         if stdout: print(stdout.decode('cp437'))
         if stderr: print(stderr.decode('cp437'))
     
-    if terminal == "cmd": lineacomandos = f"{txt.OKCYAN}cp {txt.ENDC}"+direccion+">"
-    #elif terminal == "ps": lineacomandos = ""
-    elif terminal == "bash": lineacomandos = f'{txt.OKGREEN}{os.getlogin()}@{socket.gethostname()} {txt.HEADER}CharliePad {txt.WARNING}{direccion}{txt.ENDC}\n$ '   
+    if terminal == "Windows": lineacomandos = f"{txt.OKCYAN}cp {txt.ENDC}"+direccion+">"
+    #elif terminal == "Darwin": lineacomandos = 'usuario "directorio actual"@pc ~ %'
+    elif terminal == "Linux": lineacomandos = f'{txt.OKGREEN}{os.getlogin()}@{socket.gethostname()} {txt.HEADER}CharliePad {txt.WARNING}{direccion}{txt.ENDC}\n$ '   
 
     if salida: exit_command(); break    
     elif terminal == "ps":
