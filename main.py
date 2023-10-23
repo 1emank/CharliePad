@@ -288,10 +288,10 @@ def load_config():
     
         with open("config.txt", 'w') as archivo:
             archivo.write(f'terminal={sistema}\nscroller.size=15\nlang={idioma}\nlastfile1=\nlastfile2=\nlastfile3=\nlastfile4=\nlastfile5=')
-    else:
-        with open("config.txt", 'r', encoding='utf-8') as fichero:
-            contenido = fichero.read()
-        configItems = contenido.splitlines()
+
+    with open("config.txt", 'r', encoding='utf-8') as fichero:
+        contenido = fichero.read()
+    configItems = contenido.splitlines()
     
     return terminal, scr, idioma, lastOpen5
 
