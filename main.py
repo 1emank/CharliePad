@@ -61,22 +61,20 @@ class scroller:
 ### FUNCIONES PROGRAMA
 
 def checkTerminal():
+    """
     BUF_SIZE = 256
     buffer = ctypes.create_unicode_buffer(BUF_SIZE)
     ctypes.windll.kernel32.GetConsoleTitleW(buffer, BUF_SIZE)
 
     window = buffer.value
+    
+    if "cmd.exe" in window: (terminal := "cmd")
+    elif "powershell.exe" in window: (terminal := "ps") #powershell
+    elif "MINGW64:" in window: (terminal := "bash")
+    else: (terminal := "bash")"""
 
-    terminal = ""
-    if "- python" in window: terminal = "cmd" #cmd
-    elif "cmd.exe" in window: terminal = "cmd" #cmd
-    elif "powershell.exe" in window: terminal = "ps" #powershell
-    elif "PowerShell" in window: terminal = "ps" #powershell
-    elif "mingw64:" in window: terminal = "bash" #git_bash
-    else: terminal = "bash"
+    terminal = "bash"
 
-    #print(f"Terminal is Powershell: {terminal}")
-    #print(f'Colortest:\n{txt.BOLD}BOLD\n{txt.FAIL}FAIL\n{txt.ENDC}ENDC\n{txt.HEADER}HEADER\n{txt.OKBLUE}OKBLUE\n{txt.OKCYAN}OKCYAN\n{txt.OKGREEN}OKGREEN\n{txt.UNDERLINE}UNDERLINE\n{txt.WARNING}WARNING')
     return terminal
 
 def clear(): 
@@ -343,14 +341,6 @@ while True: #Bucle menú principal
     elif terminal == "bash": lineacomandos = f'{txt.OKGREEN}{os.getlogin()}@{socket.gethostname()} {txt.HEADER}CharliePad {txt.WARNING}{direccion}{txt.ENDC}\n$ '   
 
     if salida: exit_command(); break    
-    elif terminal == "ps":
-        pass
-        """process = subprocess.Popen(f'Write-Host "CP " -ForegroundColor blue -NoNewline; write-host {direccion}>', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        
-        stdout, stderr = process.communicate()
-
-        if stdout: print(stdout.decode('cp437'))
-        if stderr: print(stderr.decode('cp437'))"""
     else: command = input(lineacomandos)
 
 """

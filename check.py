@@ -1,18 +1,12 @@
-import ctypes, subprocess
+class txt:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKCYAN = '\033[96m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
 
-BUF_SIZE = 256
-buffer = ctypes.create_unicode_buffer(BUF_SIZE)
-ctypes.windll.kernel32.GetConsoleTitleW(buffer, BUF_SIZE)
-
-window = buffer.value
-print(buffer.value)
-input("Introduce Enter para continuar")
-a = "direccion"
-
-process = subprocess.Popen('Write-Host "CP " -ForegroundColor blue -NoNewline; write-host '+a+'> ', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-#process = subprocess.Popen("dir", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-
-stdout, stderr = process.communicate()
-
-if stdout: print(stdout.decode('cp437'))
-if stderr: print(stderr.decode('cp437'))
+print(f'Colortest:\n{txt.BOLD}BOLD\n{txt.FAIL}FAIL\n{txt.ENDC}ENDC\n{txt.HEADER}HEADER\n{txt.OKBLUE}OKBLUE\n{txt.OKCYAN}OKCYAN\n{txt.OKGREEN}OKGREEN\n{txt.UNDERLINE}UNDERLINE\n{txt.WARNING}WARNING')
