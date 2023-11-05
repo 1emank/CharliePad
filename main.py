@@ -1,17 +1,7 @@
-import os, sys, platform, subprocess, shlex, socket, re
+import os, sys, subprocess, shlex, socket, re
+import checkTerminal, ansi_codes as c #propios
 
 ### CLASES PROGRAMA
-class txt:
-    HEADER = '\033[95m'
-    OKBLUE = '\033[94m'
-    OKCYAN = '\033[96m'
-    OKGREEN = '\033[92m'
-    WARNING = '\033[93m'
-    FAIL = '\033[91m'
-    ENDC = '\033[0m'
-    BOLD = '\033[1m'
-    UNDERLINE = '\033[4m'
-
 class ubiArchivo:
     def __init__(self, archivoArg):
         self.nom = os.path.basename(archivoArg)
@@ -21,7 +11,7 @@ class ubiArchivo:
         else:
             self.dir = os.path.dirname(archivoArg)
 
-class scroller: 
+class scroller: #POST
     def __init__(self, size):
         self.size = size
         self.top = size-(size-1)
@@ -59,19 +49,16 @@ class scroller:
                 self.mensaje = f"Bajando algo menos de {x} líneas" #post: número exacto
 
 ### FUNCIONES PROGRAMA
+def smartSplit(command):
+    try:
+        args = shlex.split(command)
+    except:
+        args = command.split()
+    return args
 
-def checkTerminal():
-    if os.environ['COMSPEC']
-
-    terminal = "bash"
-
-    return terminal
-
-def clear(): 
-    if terminal == "cmd" or terminal == "ps":
-        os.system('cls')
-    else:
-        os.system('clear')
+def self_execution(command):
+    args = smartSplit(command)
+    return globals()['__file__'] in args
 
 def help_command():
     print("\nAyuda charliePADconsole. Comandos:\n")
@@ -88,7 +75,7 @@ def welcome():
     print("Bienvenido a charliePADconsole, tu bloc de notas de consola")
     print("\nComandos:\ncp -new *direccion/nombre*\ncp -open *direccion/nombre*\ncp -rename *direccion/nombre antiguo* *nombre nuevo*\ncp -delete *direccion/nombre*\ncp -exit")
     print("\nAlternativamente, usa -n, -o, -r, -d, -e")
-    print('Escribe "cp -help" para más ayuda\n')
+    print('Escribe "cp -help" para más ayuda')
 
 def new_command(args):
     fichero = ubiArchivo(args[2])
@@ -129,7 +116,8 @@ def delete_command(args):
         print(f"El archivo {fichero.nom} no existe.")
 
 def exit_command(): 
-    print("Cerrando programa")
+    if terminal == 'PowerShell': print('Cerrando programa\n')
+    else: print('Cerrando Programa')
 
 def open_editor(args): ### EDITOR
 
@@ -191,7 +179,7 @@ def open_editor(args): ### EDITOR
         return contenidoList
 
     def help_editor():
-        clear()
+        print(c.Clear)
         print('Comandos:\nGuardar archivo: -save/-s \nGuardar como: -saveas/-sa *dirección*\nConfigurar pantalla: -config/-c *número de líneas*\nAyuda: -help/-h\nSalir: -exit/-e\n')
         print('Bajar X líneas: down/d/bajar/b *número*\nSubir X líneas: up/u/subir/s *número*\nEditar X Línea: edit/e *número* *contenido*\nInsertar línea: insert/i *número* *contenido*\nInsertar línea nueva al final: insert/i\nEliminar línea: remove/r *número*')
         input("\nPresiona Enter para continuar\n")
@@ -226,10 +214,10 @@ def open_editor(args): ### EDITOR
     mensajeOrden = str(fichero.abs)
     args = "" #Debug
 
-    ### BUCLE PROGRAMA
+    ### BUCLE EDITOR
     
     while True:
-        clear()
+        print(c.Clear)
         carac = carac_archivo(contenido)
         ultimaLinea = carac[0]
         palabras = carac[1]
@@ -245,10 +233,8 @@ def open_editor(args): ### EDITOR
 
         try:
             accion = input()
-            try:
-                args = shlex.split(accion)
-            except:
-                args = accion.split()
+            args = smartSplit(accion)
+
             if args[0] == ("-save") or args[0] == ("-s"): mensajeOrden = guardar_archivo(fichero.abs, contenido); editado = False; mensajeOrden = "Guardando archivo..."
             elif args[0] == ("-saveas") or args[0] == ("-sa"):
                 args[1] = eliminar_prefijos(accion, "saveas");
@@ -284,7 +270,9 @@ def open_editor(args): ### EDITOR
             mensajeOrden = "Comando no válido"
 
 ### INICIALIZAR PROGRAMA
-terminal = checkTerminal()
+
+
+terminal = checkTerminal.active_terminal()
 
 if os.path.abspath("").lower == "c:\\windows\\system32":
     direccion = os.path.expanduser("~")
@@ -297,12 +285,19 @@ command = ' '.join(args)
 
 salida = False
 
-#welcome()
+welcome()
 
 ### BUCLE PROGRAMA
+def communicate_shell(command):
+    process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    stdout, stderr = process.communicate()
+
+    if stdout: print(stdout.decode('cp437'), end ='')
+    if stderr: print(stderr.decode('cp437'), end = '')
+
 while True: #Bucle menú principal
     if command.startswith("cp") or command.startswith("-e") or command.startswith("e"):
-        args = shlex.split(command)
+        args = smartSplit(command)
         try:
             if args[0] == ('-e') or args[0] == ('e'): salida = True
             elif args[1] == ("-new") or args[1] == ("-n"): new_command(args)
@@ -317,21 +312,21 @@ while True: #Bucle menú principal
             if command == "cp": welcome()
             else: print("Comando no válido")
 
-    elif command == ("cls") or command == ("clear"): clear()
-    elif "python.exe" in command: print()
-    else:
-        process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        stdout, stderr = process.communicate()
-
-        if stdout: print(stdout.decode('cp437'))
-        if stderr: print(stderr.decode('cp437'))
+    elif command == ("cls") or command == ("clear"): print(c.Clear)
+    elif self_execution(command): print("Parece que estás intentando editar CharliePad. Esta no es la forma de hacerlo.")
+    elif command.lower().startswith('cd'):
+        communicate_shell(command)
+        try: os.chdir(command[3:len(command)]); direccion = os.path.abspath('')
+        except: pass
+    else: communicate_shell(command)
     
-    if terminal == "cmd": lineacomandos = f"{txt.OKCYAN}cp {txt.ENDC}"+direccion+">"
-    #elif terminal == "ps": lineacomandos = ""
-    elif terminal == "bash": lineacomandos = f'{txt.OKGREEN}{os.getlogin()}@{socket.gethostname()} {txt.HEADER}CharliePad {txt.WARNING}{direccion}{txt.ENDC}\n$ '   
+    if terminal == "CMD" or terminal == "PowerShell": lineacomandos = f"{c.Regular.Cyan}CP {c.Reset}"+direccion+">"
+    #elif terminal == 'Terminal': lineacomandos = f""
+    else: lineacomandos = f'{c.Regular.Green}{os.getlogin()}@{socket.gethostname()} {c.Regular.Purple}CharliePad {c.Regular.Yellow}{direccion}{c.Reset}\n$ '   
+
 
     if salida: exit_command(); break    
-    else: command = input(lineacomandos)
+    else: command = input(f'\n{lineacomandos}')
 
 """
 fuciones para añadir posteriormente:

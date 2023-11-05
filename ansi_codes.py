@@ -1,14 +1,3 @@
-class txt:
-    HEADER = '\033[95m'
-    OKBLUE = '\033[94m'
-    OKCYAN = '\033[96m'
-    OKGREEN = '\033[92m'
-    WARNING = '\033[93m'
-    FAIL = '\033[91m'
-    ENDC = '\033[0m'
-    BOLD = '\033[1m'
-    UNDERLINE = '\033[4m'
-
 class Regular:
     Black   = '\033[0;30m'
     Red     = '\033[0;31m'
@@ -82,5 +71,3 @@ class High_Intensty_backgrounds:
 Reset = '\033[0m'
 
 Clear = '\033[2J'
-
-print(f'Colortest:\n{txt.FAIL}FAIL\n{txt.ENDC}ENDC\n{txt.HEADER}HEADER\n{txt.OKBLUE}OKBLUE\n{txt.OKCYAN}OKCYAN\n{txt.OKGREEN}OKGREEN\n{txt.UNDERLINE}UNDERLINE\n{txt.WARNING}WARNING')
