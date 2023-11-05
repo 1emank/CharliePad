@@ -1,4 +1,4 @@
-import os, sys, ctypes, subprocess, shlex, socket, re
+import os, sys, platform, subprocess, shlex, socket, re
 
 ### CLASES PROGRAMA
 class txt:
@@ -61,17 +61,7 @@ class scroller:
 ### FUNCIONES PROGRAMA
 
 def checkTerminal():
-    """
-    BUF_SIZE = 256
-    buffer = ctypes.create_unicode_buffer(BUF_SIZE)
-    ctypes.windll.kernel32.GetConsoleTitleW(buffer, BUF_SIZE)
-
-    window = buffer.value
-    
-    if "cmd.exe" in window: (terminal := "cmd")
-    elif "powershell.exe" in window: (terminal := "ps") #powershell
-    elif "MINGW64:" in window: (terminal := "bash")
-    else: (terminal := "bash")"""
+    if os.environ['COMSPEC']
 
     terminal = "bash"
 
